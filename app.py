@@ -1,7 +1,15 @@
-from rich.console import Console
 from rich.table import Table
+from rich.console import Console
 import requests
 import os
+import pprint
+
+os.system("pip install requests")
+
+os.system("pip install rich")
+print(chr(27) + "[2J")
+
+console = Console()
 
 root_url = "https://data.moenv.gov.tw"
 query_url = "/api/v2/aqx_p_432"
@@ -76,10 +84,10 @@ def filte():
     for i in range(len(county)):
         print(i, county[i])
 
-    n = int(input("輸入縣市編號: "))
+    print("-------------------------")
+    n = int(input("輸入縣市編號(-1 to quit): "))
 
     if n < 0 or n >= len(county):
-        quit()
         return
 
     for i in range(len(records)):
@@ -87,15 +95,127 @@ def filte():
             print(i, records[i]["sitename"], records[i]
                   ["aqi"], records[i]["pollutant"], records[i]["status"])
 
+    print("-------------")
     num = int(input("輸入站點編號: "))
 
-    for i in records[i].items():
-        print(i)
+    for i in records[num].items():
+        print(f"{field_name(i[0])}: {i[1]}")
         pass
 
     os.system("PAUSE")
     print(chr(27) + "[2J")
 
 
-while True:
-    filte()
+def rich_filte():
+    county = []
+
+    for r in records:
+        if r["county"] not in county:
+            county.append(r["county"])
+
+    county_menu = Table(title="county")
+    county_menu.add_column("選項")
+    county_menu.add_column("縣市")
+
+    for i in range(len(county)):
+        county_menu.add_row(str(i), county[i])
+        
+    console.print(county_menu)
+
+    print("-------------------------")
+    n = int(input("輸入縣市編號(-1 to quit): "))
+
+    if n < 0 or n >= len(county):
+        return
+
+    site_menu = Table(title="site")
+    site_menu.add_column("選項")
+    site_menu.add_column("測站名稱")
+    site_menu.add_column("空氣品質指標")
+    site_menu.add_column("空氣污染指標物")
+    site_menu.add_column("狀態")
+    
+    for i in range(len(records)):
+        if county[n] in records[i]["county"]:
+            
+            status_color = "#fafafa"
+            if records[i]["status"] == "良好":
+                status_color = "#16a34a"
+            elif records[i]["status"] == "普通":
+                status_color = "#facc15"
+            elif records[i]["status"] == "對敏感族群不健康":
+                status_color = "#f97316"
+            elif records[i]["status"] == "對所有族群不健康":
+                status_color = "#ef4444"
+            
+            site_menu.add_row(str(i), records[i]["sitename"], records[i]
+                              ["aqi"], records[i]["pollutant"], "["+status_color+"]"+records[i]["status"]+"[/"+status_color+"]")
+    
+    console.print(site_menu)
+
+    print("-------------")
+    num = int(input("輸入站點編號: "))
+
+    for i in records[num].items():
+        print(f"{field_name(i[0])}: {i[1]}")
+        pass
+
+    os.system("PAUSE")
+    print(chr(27) + "[2J")
+
+
+def simple_app():
+    while True:
+        print(chr(27) + "[2J")
+        print("===================")
+        print("1. Response Info")
+        print("2. Query Data")
+        print("===================")
+        opt = int(input("請輸入選項: "))
+        if opt == 1:
+            print(chr(27) + "[2J")
+
+            d = data.copy()
+            del d["fields"]
+            del d["records"]
+            pprint.pp(d, depth=2)
+
+            os.system("PAUSE")
+        elif opt == 2:
+            print(chr(27) + "[2J")
+
+            filte()
+        else:
+            pass
+
+
+def rich_app():
+    main_menu = Table(title="AQI Info")
+    main_menu.add_column("選項")
+    main_menu.add_column("選項說明")
+    main_opt = ["Response Info", "Query Data"]
+    for i in range(len(main_opt)):
+        main_menu.add_row(str(i+1), main_opt[i])
+
+    while True:
+        print(chr(27) + "[2J")
+        console.print(main_menu)
+        opt = int(input("請輸入選項: "))
+        if opt == 1:
+            print(chr(27) + "[2J")
+
+            d = data.copy()
+            del d["fields"]
+            del d["records"]
+            pprint.pp(d, depth=2)
+
+            os.system("PAUSE")
+        elif opt == 2:
+            print(chr(27) + "[2J")
+
+            rich_filte()
+        else:
+            pass
+
+
+rich_app()
