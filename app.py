@@ -1,12 +1,20 @@
-from rich.table import Table
-from rich.console import Console
-import requests
 import os
 import pprint
+try:
+    import requests
+except ModuleNotFoundError:
+    print("Requests 沒有安裝")
+    os.system("pip install requests")
 
-os.system("pip install requests")
+try:
+    import rich
+except NotADirectoryError:
+    print("Rich 沒有安裝")
+    os.system("pip install rich")
+finally:
+    from rich.table import Table
+    from rich.console import Console
 
-os.system("pip install rich")
 print(chr(27) + "[2J")
 
 console = Console()
